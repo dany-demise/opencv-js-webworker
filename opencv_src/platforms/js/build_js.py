@@ -162,10 +162,10 @@ class Builder:
             flags += "-s ALLOW_MEMORY_GROWTH=1 "
         if self.options.closurec1:
             flags += "--closure 1 -s MODULARIZE=1 "
-        if self.options.Oz:
-            flags += "-Oz "
-        if self.options.O3:
-            flags += "-O3 "
+        #if self.options.Oz:
+        #    flags += "-Oz "
+        #if self.options.O3:
+        #    flags += "-O3 "
         return flags
 
     def config(self):
