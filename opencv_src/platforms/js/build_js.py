@@ -206,8 +206,8 @@ if __name__ == "__main__":
     parser.add_argument('--binaryen_trap_mode_clamp', action="store_true", help="Enable trap mode clamp")
     parser.add_argument('--allow_memory_growth', action="store_true", help="Allow memory growth")
     parser.add_argument('--closurec1', action="store_true", help="closure compiler")
-    parser.add_argument('--O3', action="store_true", help="optimize for speed")
-    parser.add_argument('--Oz', action="store_true", help="optimize for size")
+    # parser.add_argument('--O3', action="store_true", help="optimize for speed")
+    # parser.add_argument('--Oz', action="store_true", help="optimize for size")
 
     args = parser.parse_args()
 
