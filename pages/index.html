@@ -1,1 +1,129 @@
-<p>hi! :)</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Processing with OpenCV</title>
+  <!-- Include OpenCV.js -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Include React and ReactDOM via CDN -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react.development.js"></script>
+
+  <!-- Include Babel for JSX transpiling -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Your custom script -->
+  <script type="text/babel" data-type="module">
+    // Import necessary hooks from React
+    const { useEffect, useRef, useState } = React;
+
+    // Import cv module
+    import cv from '../services/cv';
+
+    // We'll limit the processing size to 200px.
+    const maxVideoSize = 200;
+
+    function Page() {
+      const [processing, setProcessing] = useState(false);
+      const videoElement = useRef(null);
+      const canvasEl = useRef(null);
+
+      /**
+       * Capture a frame from the video, process it with OpenCV, and display it.
+       */
+      async function onClick() {
+        setProcessing(true);
+
+        const ctx = canvasEl.current.getContext('2d');
+        ctx.drawImage(videoElement.current, 0, 0, maxVideoSize, maxVideoSize);
+        const image = ctx.getImageData(0, 0, maxVideoSize, maxVideoSize);
+
+        // Load the model
+        await cv.load();
+
+        // Processing image
+        const processedImage = await cv.imageProcessing(image);
+
+        // Render the processed image to the canvas
+        ctx.putImageData(processedImage.data.payload, 0, 0);
+        setProcessing(false);
+      }
+
+      /**
+       * Set up the camera stream on component mount.
+       */
+      useEffect(() => {
+        async function setupCamera() {
+          videoElement.current.width = maxVideoSize;
+          videoElement.current.height = maxVideoSize;
+
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: {
+                facingMode: 'user',
+                width: maxVideoSize,
+                height: maxVideoSize,
+              },
+            });
+            videoElement.current.srcObject = stream;
+
+            return new Promise((resolve) => {
+              videoElement.current.onloadedmetadata = () => {
+                resolve(videoElement.current);
+              };
+            });
+          }
+          const errorMessage =
+            'This browser does not support video capture, or this device does not have a camera';
+          alert(errorMessage);
+          return Promise.reject(errorMessage);
+        }
+
+        async function load() {
+          const videoLoaded = await setupCamera();
+          videoLoaded.play();
+          return videoLoaded;
+        }
+
+        load();
+      }, []);
+
+      /**
+       * Render the video, button, and canvas elements.
+       */
+      return (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}
+        >
+          <video className="video" playsInline ref={videoElement} />
+          <button
+            disabled={processing}
+            style={{ width: maxVideoSize, padding: 10 }}
+            onClick={onClick}
+          >
+            {processing ? 'Processing...' : 'Take a photo'}
+          </button>
+          <canvas
+            ref={canvasEl}
+            width={maxVideoSize}
+            height={maxVideoSize}
+          ></canvas>
+        </div>
+      );
+    }
+
+    // Render the Page component
+    ReactDOM.render(<Page />, document.getElementById('root'));
+  </script>
+</body>
+</html>
